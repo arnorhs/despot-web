@@ -5,8 +5,7 @@
 
 var http = require('http'),
 	util = require('util'),
-	redis = require('redis'),
-	redisClient = redis.createClient();
+	redis = require('redis');
 
 // just a handy function for the console
 function x (v) {
@@ -48,3 +47,31 @@ exports.search = function(req, res) {
 	});
 
 };
+
+exports.queue_add = function(req, res) {
+
+    console.log(req.body);
+	redisClient = redis.createClient();
+    redisClient.on('error',function(err,res){
+        console.log('Redis error: ',err);
+    });
+    redisClient.rpush("spotify_queue", req.body.spotify_id);
+    redisClient.quit();
+    res.partial('queue-list', {queue:[req.body.spotify_id]});
+
+};
+
+exports.queue = function(req, res) {
+
+	redisClient = redis.createClient();
+    redisClient.on('error',function(err,res){
+        console.log('Redis error: ',err);
+    });
+    redisClient.lrange("spotify_queue", "0", "-1", function (err,obj) {
+        if (!obj) obj = [];
+        redisClient.quit();
+        res.partial('queue-list', {queue:obj});
+    });
+
+};
+

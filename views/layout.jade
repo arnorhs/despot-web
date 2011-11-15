@@ -12,6 +12,14 @@ html
                     a(href="/") Despot 
                 .search-box
                     input(type="text",class="q",value="",placeholder="Search...")
+                .main-queue-wrapper
+                    .queue-inner
+                        h4 Spotify music queue
+                        p
+                            span#num-songs 0
+                            |  in queue
+                        #song-queue
+                            ul
         .main-wrapper
             .standard-wrapper
                 section.content!= body
