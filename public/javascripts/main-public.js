@@ -18,8 +18,13 @@
 			},
 			dataType: 'html',
 			success: function (data) {
+                $('#intro').hide();
 				$('#tracklist').find('ul').html(data).end().show();
 				doingSearch = false;
+
+
+                document.location.hash = encodeURIComponent(search);
+
 				// if the search in the intput box has changed, update the search
 				if (search != $('input.q').val()) {
 					doSearch();
@@ -35,12 +40,23 @@
 	$(function(){
 
 		$q = $('input.q');
+        $q.focus().select();
+        if (document.location.hash.length > 0) {
+            $q.val(decodeURIComponent(document.location.hash.replace(/#/,'')));
+        }
+        if ($q.val().length > 2) {
+            doSearch();
+        }
 		
 		var doingSearch = false;
 		$q.keyup(function(e){
 
 			// only search if we have enough stuff and they key pressed was a key..
 			if ($q.val().length < 3 || ignoreKeys.indexOf(e.keyCode) != -1 || e.metaKey === true) {
+                if ($q.val().length < 3) {
+                    $('#tracklist').hide();
+                    $('intro').show();
+                }
 				return;
 			}
 				

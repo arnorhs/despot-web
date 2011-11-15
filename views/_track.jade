@@ -1,0 +1,7 @@
+li(class='track')
+    .song
+        a(href=track.spotifyurl, title=track.trackname) #{track.trackname}
+    .artist= track.artistname
+    .actions
+        span.add-to-queue(title="Add to queue") Add
+
