@@ -3,7 +3,6 @@
 $(function(){
 
 		$('form.search').submit(function(){
-			debugger;
 			$.ajax({
 				type: 'GET',
 				url: '/search',
@@ -12,7 +11,7 @@ $(function(){
 				},
 				dataType: 'html',
 				success: function (data) {
-					$('#tracklist ul').html(data).show();
+					$('#tracklist').find('ul').html(data).end().show();
 				}
 			});
 			return false;
