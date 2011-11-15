@@ -4,46 +4,44 @@
  */
 
 var http = require('http'),
-    xml2js = require('xml2js'),
-	util = require('util');
+	util = require('util'),
+	redis = require('redis'),
+	redisClient = redis.createClient();
 
+// just a handy function for the console
 function x (v) {
-	console.log(util.inspect(v, false, null))
+	return util.inspect(v, false, null);
 }
 
 exports.index = function(req, res){
-
 	res.render('index', {});
-
 };
 
-exports.search = function(req, res){
+exports.search = function(req, res) {
 
 	var httpRequest = http.get({
 		host: 'ws.spotify.com',
 		port: 80,
-		path: '/search/1/track?q=peanut+butter+jelly+time'
+		path: '/search/1/track.json?q='+req.query.q
 	}, function(httpRes) {
 		var d = '';
 		httpRes.addListener('data', function (chunk) {
 			d = d + chunk;
 		});
-		httpRes.addListener('end', function (hvad) {
-			var parser = new xml2js.Parser();
-		
-			parser.parseString(d, function (err, result) {
-				var tracklist = [], track;
-				for (var i in result.track) {
-					track = result.track[i];
-					tracklist.push({
-						'trackname': track.name,
-						'spotifyurl': track['@'].href,
-						'artistname': track.artist.name
-					});
-				};
-				
-				res.partial('search', { tracklist: tracklist })
-			});
+		httpRes.addListener('end', function () {
+			
+			var tracks = JSON.parse(d).tracks, tracklist = [], track;
+			
+			for (var i in tracks) {
+				track = tracks[i];
+				tracklist.push({
+					'trackname': track.name,
+					'spotifyurl': track.href,
+					'artistname': track.artists[0].name
+				});
+			}
+			res.partial('search-results', { tracklist: tracklist })
+
 		});
 	}).on('error', function(e) {
 		console.log('problem with request: ' + e.message);

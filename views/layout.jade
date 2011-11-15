@@ -1,8 +1,19 @@
-!!!
+!!! 5
 html
-  head
-    title hello
-    link(rel='stylesheet', href='/stylesheets/style.css')
-    script(src='/javascripts/jquery-1.7.js')
-    script(src='/javascripts/main-public.js')
-  body!= body
+	head
+		title hello
+		link(rel='stylesheet', href='/stylesheets/style.css')
+		script(src='/javascripts/jquery-1.7.js')
+		script(src='/javascripts/main-public.js')
+	body
+		header.main
+			h1.logo
+				a(href="/") Despot 
+			.search-box
+				input(type="text",class="q",value="")
+		section.content!= body
+		footer
+			Created by
+			a(href="http://twitter.com/paulrosania") @paulrosania
+			and
+			a(href="http://twitter.com/arnorhs") @arnorhs
