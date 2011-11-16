@@ -2,6 +2,17 @@
 	var $q, doingSearch = false, timer,
 		ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
 
+    function next_track() {
+        $.ajax({
+            url: '/next',
+            type: 'POST',
+            success: function (data) {
+              $('#song-queue ul li:first').remove();
+              $('#num-songs').html($('#song-queue ul li').length);
+            }
+        });
+    }
+
     function add_to_queue(spotify_id) {
         $.ajax({
             url: '/queue/add',
@@ -107,6 +118,11 @@
                 update_queue(data);
             }
         });
+
+    $('#next').click(function(e) {
+      e.preventDefault();
+      next_track();
+    });
 	});
 
 
