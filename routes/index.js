@@ -55,7 +55,7 @@ exports.queue_add = function(req, res) {
     redisClient.on('error',function(err,res){
         console.log('Redis error: ',err);
     });
-    redisClient.rpush("spotify_queue", req.body.spotify_id);
+    redisClient.rpush("despot:queue", req.body.spotify_id);
     redisClient.quit();
     res.partial('queue-list', {queue:[req.body.spotify_id]});
 
@@ -67,7 +67,7 @@ exports.queue = function(req, res) {
     redisClient.on('error',function(err,res){
         console.log('Redis error: ',err);
     });
-    redisClient.lrange("spotify_queue", "0", "-1", function (err,obj) {
+    redisClient.lrange("despot:queue", "0", "-1", function (err,obj) {
         if (!obj) obj = [];
         redisClient.quit();
         res.partial('queue-list', {queue:obj});
