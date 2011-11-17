@@ -62,7 +62,6 @@
                 prepareTracks($tracklist);
 				doingSearch = false;
 
-
                 document.location.hash = encodeURIComponent(search);
 
 				// if the search in the intput box has changed, update the search
