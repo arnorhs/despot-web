@@ -162,16 +162,17 @@ section.content {
 #tracklist ul li.track .song, .artist, .actions {
   line-height: 30px;
   float: left;
-  width: 40%;
   white-space: nowrap;
   overflow: hidden;}
 #tracklist ul li.track .song {
   font-weight: bold;
-  margin-right: 10px;}
+  margin-right: 10px;
+  width: 55%;}
+#tracklist ul li.track .artist {
+  width: 35%;}
 #tracklist ul li.track .actions {
-  width: 15%;
-  float: right;
-  text-align: right;}
+  width: 8%;
+  float: left;}
 #tracklist ul li.track .actions span.add-to-queue {
   display: inline-block;
   font-size: 11px;

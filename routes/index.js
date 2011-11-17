@@ -16,7 +16,7 @@ function x (v) {
 // Parses a JSON search results string into tracks...
 function searchResultsFromJSON (str) {
     var tracks = JSON.parse(str).tracks, tracklist = [], track;
-    
+
     for (var i in tracks) {
         track = tracks[i];
         tracklist.push({
@@ -37,12 +37,9 @@ exports.search = function(req, res) {
 
     var searchQuery = req.query.q.trim();
     console.log("Searching for ",searchQuery);
-
     step(
         function searchRedis () {
-
             var next = this;
-
             // Try to retrieve the current search results form the redis server
             // for ultra speed
             req.redisClient.get("search:cache:"+searchQuery, function (err,obj) {
@@ -53,10 +50,8 @@ exports.search = function(req, res) {
                     res.partial('search-results', { tracklist: searchResultsFromJSON(obj) })
                 };
             });
-            
         },
         function startAPIRequest () {
-
             // If we can't find the search results from redis, we will try to
             // get them from spotify
             var httpRequest = http.get({
@@ -73,17 +68,13 @@ exports.search = function(req, res) {
                 d = d + chunk;
             });
             httpRes.addListener('end', function () {
-
                 // save the results to redis before we return, so next identical
                 // search will be super fast.. or should I say "redis fast"
                 req.redisClient.set("search:cache:"+searchQuery,d);
-
                 res.partial('search-results', { tracklist: searchResultsFromJSON(d) })
-
             });
         }
     );
-
 };
 
 exports.playback_next = function(req, res) {

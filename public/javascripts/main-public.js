@@ -1,8 +1,10 @@
 (function(window, undefined) {
 	var $q, doingSearch = false, timer,
+        keystrokeDelay = 350,
+        minimumSearchLength = 2,
 		ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
 
-    function next_track() {
+    function nextTrack() {
         $.ajax({
             url: '/playback/next',
             type: 'POST',
@@ -13,7 +15,20 @@
         });
     }
 
-    function add_to_queue(spotify_id) {
+    function fetchRemoteQueue () {
+        // load the queue
+        $.ajax({
+            url: '/queue',
+            type: 'GET',
+            dataType: 'html',
+            success: function (data) {
+                // inset queue here...
+                displayQueue(data);
+            }
+        });
+    }
+
+    function addToQueue(spotify_id) {
         $.ajax({
             url: '/queue/add',
             type: 'POST',
@@ -22,12 +37,12 @@
                 spotify_id: spotify_id
             },
             success: function (data) {
-                update_queue(data);
+                displayQueue(data);
             }
         });
     }
 
-    function update_queue(data) {
+    function displayQueue(data) {
         $('#song-queue ul').append(data);
         $('#num-songs').html($('#song-queue ul li').length);
     }
@@ -36,19 +51,19 @@
 
         $('span.add-to-queue',$obj).click(function(){
             var spotify_id = $(this).closest('li.track').find('.song a').attr('href');
-            add_to_queue(spotify_id);
+            addToQueue(spotify_id);
         });
 
     }
 
-	function doSearch () {
+	function doSearch (search) {
 
 		// prevent us from doing two ajax requests at the same time
 		if (doingSearch) return false;
+
 		doingSearch = true;
 		// the search term to look for
-		var search = $('input.q').val();
-		$('#tracklist').find('ul').html('').end().hide();
+		$('#tracklist').addClass('spinner');
 		$.ajax({
 			type: 'GET',
 			url: '/search',
@@ -66,7 +81,7 @@
 
 				// if the search in the intput box has changed, update the search
 				if (search != $('input.q').val()) {
-					doSearch();
+					doSearch($('input.q').val());
 				}
 			},
 			error: function () {
@@ -84,45 +99,40 @@
             $q.val(decodeURIComponent(document.location.hash.replace(/#/,'')));
         }
         if ($q.val().length > 2) {
-            doSearch();
+            doSearch($q.val());
         }
 		
 		var doingSearch = false;
 		$q.keyup(function(e){
 
+			clearTimeout(timer);
+
 			// only search if we have enough stuff and they key pressed was a key..
-			if ($q.val().length < 3 || ignoreKeys.indexOf(e.keyCode) != -1 || e.metaKey === true) {
-                if ($q.val().length < 3) {
+            if (e.keyCode == 13) {
+                doSearch($q.val());
+            } else if ($q.val().length < minimumSearchLength || ignoreKeys.indexOf(e.keyCode) != -1 || e.metaKey === true) {
+                if ($q.val().length < minimumSearchLength) {
                     $('#tracklist').hide();
                     $('#intro').show();
                 }
 				return;
-			}
-				
+            }
 			// almost instant search.. waits a few ms
-			clearTimeout(timer);
-			timer = setTimeout(function(){
-				doSearch();
-			},500);
+            (function(searchTerm){
+                timer = setTimeout(function(){
+                    doSearch(searchTerm);
+                },keystrokeDelay);
+            })($q.val());
 		});
-        
 
         // load the queue
-        $.ajax({
-            url: '/queue',
-            type: 'GET',
-            dataType: 'html',
-            success: function (data) {
-                // inset queue here...
-                update_queue(data);
-            }
-        });
+        fetchRemoteQueue();
 
-    $('#next').click(function(e) {
-      e.preventDefault();
-      next_track();
+        $('#next').click(function(e) {
+          e.preventDefault();
+          nextTrack();
+        });
     });
-	});
 
 
 
