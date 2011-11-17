@@ -5,12 +5,12 @@
 
 var express = require('express'),
 	routes = require('./routes'),
-    despot = require('./lib/despot');
+    despot = require('./lib/despot'),
+    stylus = require('stylus');
 
-var app = module.exports = express.createServer();
+var app = module.exports = express.createServer()
 
 // Configuration
-
 app.configure(function(){
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
@@ -19,7 +19,7 @@ app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.cookieParser());
     app.use(express.session({ secret: 'your secret here' }));
-    app.use(express.compiler({ src: __dirname + '/public', enable: ['sass'] }));
+    app.use(stylus.middleware({ src: __dirname + '/public' }));
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });

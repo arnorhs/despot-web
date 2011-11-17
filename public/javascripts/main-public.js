@@ -10,7 +10,6 @@
             type: 'POST',
             success: function (data) {
                 $('#song-queue ul li:first').remove();
-                $('#num-songs').html($('#song-queue ul li').length);
             }
         });
     }
@@ -44,7 +43,6 @@
 
     function displayQueue(data) {
         $('#song-queue ul').append(data);
-        $('#num-songs').html($('#song-queue ul li').length);
     }
 
     function prepareTracks ($obj) {
@@ -57,11 +55,11 @@
     function doSearch (search) {
 
         // prevent us from doing two ajax requests at the same time
-        if (doingSearch) return false;
+        if (doingSearch || search.length < 1) return false;
 
         doingSearch = true;
         // the search term to look for
-        $('#tracklist').addClass('spinner');
+        $q.addClass('spinner');
         $.ajax({
             type: 'GET',
             url: '/search',
@@ -74,6 +72,7 @@
                 var $tracklist = $('#tracklist').find('ul').html(data).end().show();
                 prepareTracks($tracklist);
                 doingSearch = false;
+                $q.removeClass('spinner');
 
                 document.location.hash = encodeURIComponent(search);
 

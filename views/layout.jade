@@ -3,6 +3,7 @@ html
     head
         title Despot
         link(rel='stylesheet', href='/stylesheets/style.css')
+        link(href='http://fonts.googleapis.com/css?family=Jockey+One&subset=latin,latin-ext', rel='stylesheet')
         script(src='/javascripts/jquery-1.7.js')
         script(src='/javascripts/main-public.js')
     body.colored
@@ -12,15 +13,14 @@ html
                     a(href="/") Despot 
                 .search-box
                     input(type="text",class="q",value="",placeholder="Search...")
-                .main-queue-wrapper
-                    .queue-inner
-                        h4 Spotify music queue
-                        a#playback-next next
-                        p
-                            span#num-songs 0
-                            |  in queue
-                        #song-queue
-                            ul
+        // a lot of html.. i know
+        .main-queue-wrapper
+            .queue-chrome
+                .queue-inner
+                    h4.now-playing Now playing...
+                    span#playback-next next
+                    #song-queue
+                        ul
         .main-wrapper
             .standard-wrapper
                 section.content!= body
