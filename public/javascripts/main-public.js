@@ -1,16 +1,16 @@
 (function(window, undefined) {
-	var $q, doingSearch = false, timer,
+    var $q, doingSearch = false, timer,
         keystrokeDelay = 350,
         minimumSearchLength = 2,
-		ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
+        ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
 
     function nextTrack() {
         $.ajax({
             url: '/playback/next',
             type: 'POST',
             success: function (data) {
-              $('#song-queue ul li:first').remove();
-              $('#num-songs').html($('#song-queue ul li').length);
+                $('#song-queue ul li:first').remove();
+                $('#num-songs').html($('#song-queue ul li').length);
             }
         });
     }
@@ -48,52 +48,48 @@
     }
 
     function prepareTracks ($obj) {
-
         $('span.add-to-queue',$obj).click(function(){
             var spotify_id = $(this).closest('li.track').find('.song a').attr('href');
             addToQueue(spotify_id);
         });
-
     }
 
-	function doSearch (search) {
+    function doSearch (search) {
 
-		// prevent us from doing two ajax requests at the same time
-		if (doingSearch) return false;
+        // prevent us from doing two ajax requests at the same time
+        if (doingSearch) return false;
 
-		doingSearch = true;
-		// the search term to look for
-		$('#tracklist').addClass('spinner');
-		$.ajax({
-			type: 'GET',
-			url: '/search',
-			data: {
-				q: search
-			},
-			dataType: 'html',
-			success: function (data) {
+        doingSearch = true;
+        // the search term to look for
+        $('#tracklist').addClass('spinner');
+        $.ajax({
+            type: 'GET',
+            url: '/search',
+            data: {
+                q: search
+            },
+            dataType: 'html',
+            success: function (data) {
                 $('#intro').hide();
-				var $tracklist = $('#tracklist').find('ul').html(data).end().show();
+                var $tracklist = $('#tracklist').find('ul').html(data).end().show();
                 prepareTracks($tracklist);
-				doingSearch = false;
+                doingSearch = false;
 
                 document.location.hash = encodeURIComponent(search);
 
-				// if the search in the intput box has changed, update the search
-				if (search != $('input.q').val()) {
-					doSearch($('input.q').val());
-				}
-			},
-			error: function () {
-				doingSearch = false;
-			}
-		});
+                // if the search in the intput box has changed, update the search
+                if (search != $('input.q').val()) {
+                    doSearch($('input.q').val());
+                }
+            },
+            error: function () {
+                doingSearch = false;
+            }
+        });
+    }
 
-	}
-
-	$(function(){
-
-		$q = $('input.q');
+    $(function(){
+        $q = $('input.q');
         $q.focus().select();
         if (document.location.hash.length > 0) {
             $q.val(decodeURIComponent(document.location.hash.replace(/#/,'')));
@@ -101,13 +97,13 @@
         if ($q.val().length > 2) {
             doSearch($q.val());
         }
-		
-		var doingSearch = false;
-		$q.keyup(function(e){
 
-			clearTimeout(timer);
+        var doingSearch = false;
+        $q.keyup(function(e){
 
-			// only search if we have enough stuff and they key pressed was a key..
+            clearTimeout(timer);
+
+            // only search if we have enough stuff and they key pressed was a key..
             if (e.keyCode == 13) {
                 doSearch($q.val());
             } else if ($q.val().length < minimumSearchLength || ignoreKeys.indexOf(e.keyCode) != -1 || e.metaKey === true) {
@@ -115,36 +111,22 @@
                     $('#tracklist').hide();
                     $('#intro').show();
                 }
-				return;
+                return;
             }
-			// almost instant search.. waits a few ms
+            // almost instant search.. waits a few ms
             (function(searchTerm){
                 timer = setTimeout(function(){
                     doSearch(searchTerm);
                 },keystrokeDelay);
             })($q.val());
-		});
+        });
 
         // load the queue
         fetchRemoteQueue();
 
-        $('#next').click(function(e) {
-          e.preventDefault();
-          nextTrack();
+        $('#playback-next').click(function(e) {
+            e.preventDefault();
+            nextTrack();
         });
     });
-
-
-
-
-
 })(window);
-
-
-
-
-
-
-
-
-
