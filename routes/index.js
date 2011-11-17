@@ -48,7 +48,7 @@ exports.search = function(req, res) {
 
 };
 
-exports.next_track = function(req, res) {
+exports.playback_next = function(req, res) {
 
 	redisClient = redis.createClient();
     redisClient.on('error',function(err,res){

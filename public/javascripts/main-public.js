@@ -4,7 +4,7 @@
 
     function next_track() {
         $.ajax({
-            url: '/next',
+            url: '/playback/next',
             type: 'POST',
             success: function (data) {
               $('#song-queue ul li:first').remove();
