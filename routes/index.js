@@ -48,6 +48,18 @@ exports.search = function(req, res) {
 
 };
 
+exports.next_track = function(req, res) {
+
+	redisClient = redis.createClient();
+    redisClient.on('error',function(err,res){
+        console.log('Redis error: ',err);
+    });
+    redisClient.rpush("despot:commands", "NEXT");
+    redisClient.quit();
+    res.send('ok');
+
+};
+
 exports.queue_add = function(req, res) {
 
     console.log(req.body);
