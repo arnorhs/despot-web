@@ -3,30 +3,14 @@
  * index page (home page)
  */
 
-var http = require('http')
-    ,util = require('util')
+var util = require('util')
     ,redis = require('redis')
     ,step = require('step')
+    ,spotify = require('../lib/despot/spotify')
 
 // just a handy function for the console
 function x (v) {
 	return util.inspect(v, false, null);
-}
-
-// Parses a JSON search results string into tracks...
-function searchResultsFromJSON (str) {
-    var tracks = JSON.parse(str).tracks, tracklist = [], track;
-
-    for (var i in tracks) {
-        track = tracks[i];
-        tracklist.push({
-            'trackname': track.name,
-            'spotifyurl': track.href,
-            'artistname': track.artists[0].name
-        });
-    }
-
-    return tracklist;
 }
 
 exports.index = function(req, res){
@@ -36,7 +20,6 @@ exports.index = function(req, res){
 exports.search = function(req, res) {
 
     var searchQuery = req.query.q.trim();
-    console.log("Searching for ",searchQuery);
     step(
         function searchRedis () {
             var next = this;
@@ -47,31 +30,21 @@ exports.search = function(req, res) {
                     // stepping on startAPIRequest
                     next();
                 } else {
-                    res.partial('search-results', { tracklist: searchResultsFromJSON(obj) })
+                    res.partial('search-results', { tracklist: spotify.searchResultsFromJSON(obj) })
                 };
             });
         },
         function startAPIRequest () {
             // If we can't find the search results from redis, we will try to
             // get them from spotify
-            var httpRequest = http.get({
-                host: 'ws.spotify.com',
-                port: 80,
-                path: '/search/1/track.json?q='+searchQuery
-            }, this ).on('error', function(e) {
-                console.log('problem with request: ' + e.message);
-            });
-        },
-        function handleAPIRequest (httpRes) {
-            var d = '';
-            httpRes.addListener('data', function (chunk) {
-                d = d + chunk;
-            });
-            httpRes.addListener('end', function () {
+            spotify.api.searchTrack(searchQuery, function (err,searchResults) {
                 // save the results to redis before we return, so next identical
                 // search will be super fast.. or should I say "redis fast"
-                req.redisClient.set("search:cache:"+searchQuery,d);
-                res.partial('search-results', { tracklist: searchResultsFromJSON(d) })
+                req.redisClient.set("search:cache:"+searchQuery,searchResults);
+                tracks = spotify.searchResultsFromJSON(searchResults);
+                res.partial('search-results', { tracklist: tracks})
+            }).on('error', function(e) {
+                console.log('problem with spotify request: ' + e.message);
             });
         }
     );
@@ -86,16 +59,36 @@ exports.playback_next = function(req, res) {
 
 exports.queue_add = function(req, res) {
 
-    req.redisClient.rpush("despot:queue", req.body.spotify_id);
-    res.partial('queue-list', {queue:[req.body.spotify_id]});
+    var spotify_id = req.body.spotify_id;
+    // add it to the queue
+    req.redisClient.rpush("despot:queue", spotify_id);
+    // retrieve meta data
+    // If we can't find the search results from redis, we will try to
+    // get them from spotify
+    spotify.api.lookupTrack(spotify_id, function (err,track) {
+        req.redisClient.hset("spotify_track_meta",spotify_id,track);
+        res.partial('queue-list', {queue:[spotify.trackMetaFromJSON(track)]});
+    }).on('error', function(e) {
+        console.log('problem with spotify request: ' + e.message);
+        res.partial('ajax-error', {queue:[req.body.spotify_id]});
+    });
+
 
 };
 
 exports.queue = function(req, res) {
 
-    req.redisClient.lrange("despot:queue", "0", "-1", function (err,obj) {
-        if (!obj) obj = [];
-        res.partial('queue-list', {queue:obj});
+    req.redisClient.lrange("despot:queue", "0", "-1", function (err,arr) {
+        if (!arr) {
+            res.send('')
+            return;
+        }
+        req.redisClient.hmget("spotify_track_meta",arr,function(err,arr){
+            for (var i in arr) {
+                arr[i] = spotify.trackMetaFromJSON(arr[i]);
+            }
+            res.partial('queue-list', {queue:arr});
+        });
     });
 
 };

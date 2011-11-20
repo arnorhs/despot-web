@@ -1,3 +1,6 @@
 each song in queue
-    li= song
+    li
+        a(href=song.spotifyurl)= song.trackname
+        |  by
+        = song.artistname
 
