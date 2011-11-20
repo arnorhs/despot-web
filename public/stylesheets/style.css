@@ -251,7 +251,26 @@ header.main .search-box input.q:-moz-placeholder {
 .main-queue-wrapper .queue-chrome #playback-next:hover {
   opacity: 0.8;
 }
+.main-queue-wrapper .queue-chrome ul {
+  overflow-y: auto;
+  max-height: 500px;
+  width: 338px;
+}
 .main-queue-wrapper .queue-chrome ul li {
+  color: #5e843c;
+  line-height: 32px;
+  font-size: 13px;
+  padding: 0 8px;
+  margin-bottom: 3px;
+  width: 298px;
+}
+.main-queue-wrapper .queue-chrome ul li:nth-child(1n) {
+  background: rgba(0,0,0,0.07);
+}
+.main-queue-wrapper .queue-chrome ul li:nth-child(2n) {
+  background: rgba(0,0,0,0.15);
+}
+.main-queue-wrapper .queue-chrome ul li a {
   color: #7daa5a;
 }
 .main-wrapper {
