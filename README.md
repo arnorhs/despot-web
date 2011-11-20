@@ -1,10 +1,32 @@
-#despot web interface
+# despot web interface
 
 for interfacing with https://github.com/paulrosania/despot
 
-Node npm requirements:
-- express (and dependencies)
-- redis + server
+# Using
+
+So far you need both this and the /despot app to 
+
+# Requirements
+
+- node.js w/express and requirements
+- redis server
+- the computer running despot needs to have an audio adapter and the music
+  has to play straight from that computer, because it
+  uses libspotify to play music. Libspotify is a library from spotify and
+  it requires you to have an API key etc.. you'll see more info on
+  paul's github repo for despot (yes we have plans on joining them in to
+  a single repo.
+
+# How does it work?
+
+So far it's incredibly user-unfriendly
+
+Redis is used to communicate between the libspotify (despot) and the web app
+(despot-web), by placing a spotify track uri into a queue in redis. The
+despot process waits for stuff in that queue and plays it and loops through
+the queue as you go.
+
+You use the web app to find music and add it to the queue.
 
 # Authors
 
