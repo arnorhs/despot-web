@@ -8,6 +8,7 @@ This is on my "want" list:
 - upvoting songs in the queue
 - seeing what's currently being played
 - seeing when things get updated (new things in the queue etc)
+- removing a song from the queue
 
 # Queue architecture
 

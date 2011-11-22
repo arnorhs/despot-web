@@ -5,9 +5,7 @@
         ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
 
     function nextTrack() {
-        $.ajax({
-            url: '/playback/next',
-            type: 'POST',
+        $ajaxPost('/playback/next',{
             success: function (data) {
                 $('#song-queue ul li:first').remove();
             }
@@ -16,10 +14,7 @@
 
     function fetchRemoteQueue () {
         // load the queue
-        $.ajax({
-            url: '/queue',
-            type: 'GET',
-            dataType: 'html',
+        $ajaxGet('/queue', {
             success: function (data) {
                 // inset queue here...
                 displayQueue(data);
@@ -31,10 +26,7 @@
     }
 
     function addToQueue(spotify_id) {
-        $.ajax({
-            url: '/queue/add',
-            type: 'POST',
-            dataType: 'html',
+        $ajaxPost('/queue/add', {
             data: {
                 spotify_id: spotify_id
             },
@@ -66,13 +58,10 @@
         doingSearch = true;
         // the search term to look for
         $q.addClass('spinner');
-        $.ajax({
-            type: 'GET',
-            url: '/search',
+        $ajaxGet('/search', {
             data: {
                 q: search
             },
-            dataType: 'html',
             success: function (data) {
                 $('#intro').hide();
                 var $tracklist = $('#tracklist').find('ul').html(data).end().show();
@@ -122,4 +111,14 @@
             nextTrack();
         });
     });
+
+
+    // Lazy short-hand functions for ajax requests - returns whatever $.ajax returns
+    function _ajax (type) {
+        return function (url,options) {
+            return $.ajax( $.extend({}, {type: type, url: url, dataType:'html'}, options) );
+        };
+    }
+    var $ajaxGet = _ajax('GET'), $ajaxPost = _ajax('POST');
+
 })(window);
