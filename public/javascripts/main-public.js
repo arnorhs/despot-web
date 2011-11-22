@@ -1,5 +1,5 @@
 (function(window, undefined) {
-    var $q, doingSearch = false, timer,
+    var $q, doingSearch = false,
         keystrokeDelay = 350,
         minimumSearchLength = 2,
         ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
@@ -23,6 +23,9 @@
             success: function (data) {
                 // inset queue here...
                 displayQueue(data);
+            },
+            error: function () {
+                alert("Oops! We're having problems fetching the current queue of songs.. :S");
             }
         });
     }
@@ -37,6 +40,9 @@
             },
             success: function (data) {
                 displayQueue(data);
+            },
+            error: function () {
+                alert("Oops! We're having problems adding to queue. Try again later");
             }
         });
     }
@@ -73,15 +79,10 @@
                 prepareTracks($tracklist);
                 doingSearch = false;
                 $q.removeClass('spinner');
-
                 document.location.hash = encodeURIComponent(search);
-
-                // if the search in the intput box has changed, update the search
-                if (search != $('input.q').val()) {
-                    doSearch($('input.q').val());
-                }
             },
             error: function () {
+                var $tracklist = $('#tracklist').find('ul').html("<li>Oops.. search didn't go very well.. try again later. Sorry.").end().show();
                 doingSearch = false;
             }
         });
@@ -100,24 +101,17 @@
         var doingSearch = false;
         $q.keyup(function(e){
 
-            clearTimeout(timer);
-
             // only search if we have enough stuff and they key pressed was a key..
-            if (e.keyCode == 13) {
+            if ([13,32].indexOf(e.keyCode) != -1) {
                 doSearch($q.val());
-            } else if ($q.val().length < minimumSearchLength || ignoreKeys.indexOf(e.keyCode) != -1 || e.metaKey === true) {
+            } else if ($q.val().length < minimumSearchLength) {
                 if ($q.val().length < minimumSearchLength) {
                     $('#tracklist').hide();
                     $('#intro').show();
+                    document.location.hash = '';
                 }
                 return;
             }
-            // almost instant search.. waits a few ms
-            (function(searchTerm){
-                timer = setTimeout(function(){
-                    doSearch(searchTerm);
-                },keystrokeDelay);
-            })($q.val());
         });
 
         // load the queue
