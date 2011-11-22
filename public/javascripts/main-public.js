@@ -12,11 +12,10 @@
         });
     }
 
+    // loads the list of stuff in the queue
     function fetchRemoteQueue () {
-        // load the queue
         $ajaxGet('/queue', {
             success: function (data) {
-                // inset queue here...
                 displayQueue(data);
             },
             error: function () {
