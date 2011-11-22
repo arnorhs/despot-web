@@ -30,7 +30,12 @@ exports.search = function(req, res) {
                     // stepping on startAPIRequest
                     next();
                 } else {
-                    res.partial('search-results', { tracklist: spotify.searchResultsFromJSON(obj) })
+                    var tracklist = spotify.searchResultsFromJSON(obj) 
+                    if (!tracklist) {
+                        res.send('');
+                        return;
+                    }
+                    res.partial('search-results', { tracklist: tracklist})
                 };
             });
         },
@@ -66,6 +71,10 @@ exports.queue_add = function(req, res) {
     // If we can't find the search results from redis, we will try to
     // get them from spotify
     spotify.api.lookupTrack(spotify_id, function (err,track) {
+        if (!track) {
+            res.send('');
+            return;
+        }
         req.redisClient.hset("spotify_track_meta",spotify_id,track);
         res.partial('queue-list', {queue:[spotify.trackMetaFromJSON(track)]});
     }).on('error', function(e) {
@@ -84,6 +93,10 @@ exports.queue = function(req, res) {
             return;
         }
         req.redisClient.hmget("spotify_track_meta",arr,function(err,arr){
+            if (!arr) {
+                res.send('');
+            }
+            return;
             for (var i in arr) {
                 arr[i] = spotify.trackMetaFromJSON(arr[i]);
             }
