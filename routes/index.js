@@ -95,8 +95,8 @@ exports.queue = function(req, res) {
         req.redisClient.hmget("spotify_track_meta",arr,function(err,arr){
             if (!arr) {
                 res.send('');
+                return;
             }
-            return;
             for (var i in arr) {
                 arr[i] = spotify.trackMetaFromJSON(arr[i]);
             }
