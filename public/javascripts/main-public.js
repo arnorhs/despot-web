@@ -1,6 +1,6 @@
 (function(window, undefined) {
-    var $q, doingSearch = false,
-        keystrokeDelay = 350,
+    var $q, doingSearch = false, timer,
+        idleDelay = 1500, lastSearch = '',
         minimumSearchLength = 2,
         ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
 
@@ -12,6 +12,10 @@
         });
     }
 
+    function getActiveSearchTerm () {
+        return $q.val().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+    }
+
     // loads the list of stuff in the queue
     function fetchRemoteQueue () {
         $ajaxGet('/queue', {
@@ -19,7 +23,7 @@
                 displayQueue(data);
             },
             error: function () {
-                alert("Oops! We're having problems fetching the current queue of songs.. :S");
+                alert("Fuck, something's wrong.");
             }
         });
     }
@@ -53,9 +57,9 @@
 
         // prevent us from doing two ajax requests at the same time
         if (doingSearch || search.length < 1) return false;
-
+        if (search == lastSearch) return false;
+        lastSearch = search;
         doingSearch = true;
-        // the search term to look for
         $q.addClass('spinner');
         $ajaxGet('/search', {
             data: {
@@ -82,23 +86,31 @@
         if (document.location.hash.length > 0) {
             $q.val(decodeURIComponent(document.location.hash.replace(/#/,'')));
         }
-        if ($q.val().length > 2) {
-            doSearch($q.val());
+        if (getActiveSearchTerm().length > 2) {
+            doSearch(getActiveSearchTerm());
         }
 
         var doingSearch = false;
         $q.keyup(function(e){
 
+            clearTimeout(timer);
+
             // only search if we have enough stuff and they key pressed was a key..
             if ([13,32].indexOf(e.keyCode) != -1) {
-                doSearch($q.val());
-            } else if ($q.val().length < minimumSearchLength) {
-                if ($q.val().length < minimumSearchLength) {
+                doSearch(getActiveSearchTerm());
+            } else if (getActiveSearchTerm().length < minimumSearchLength) {
+                if (getActiveSearchTerm().length < minimumSearchLength) {
                     $('#tracklist').hide();
                     $('#intro').show();
                     document.location.hash = '';
                 }
-                return;
+            } else {
+                // almost instant search.. waits a few ms
+                (function(searchTerm){
+                    timer = setTimeout(function(){
+                        doSearch(searchTerm);
+                    },idleDelay);
+                })(getActiveSearchTerm());
             }
         });
 
