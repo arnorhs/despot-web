@@ -2,10 +2,6 @@
 
 for interfacing with https://github.com/paulrosania/despot
 
-# Using
-
-So far you need both this and the /despot app to 
-
 # Requirements
 
 - node.js w/express and requirements
