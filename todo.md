@@ -61,9 +61,3 @@ We might want to change to a http ajax search directly in the spotify API. The
 reason for that is that the rate limit might get us pretty soon if a few people
 started searching at the same time.
 
-We also should change the instant search into something where it only searches
-after hitting the space bar, since searching for a song name with half a word
-isn't very helpful (especially since we don't have a auto-suggest feature (which
-we could also opt into integrating at a later point...
-
-
