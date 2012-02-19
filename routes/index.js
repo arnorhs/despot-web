@@ -20,22 +20,28 @@ exports.index = function(req, res){
 exports.search = function(req, res) {
 
     var searchQuery = req.query.q.trim();
+    console.log('Despot is going to find: ', searchQuery);
     step(
         function searchRedis () {
             var next = this;
             // Try to retrieve the current search results form the redis server
             // for ultra speed
-            req.redisClient.get("search:cache:"+searchQuery, function (err,obj) {
-                if (!obj) {
+            req.redisClient.hget("search_cache",searchQuery, function (err,searchResultsFromCache) {
+                if (err) {
+                    console.log('error: ',err);
+                    next();
+                }
+                if (searchResultsFromCache === null) {
                     // stepping on startAPIRequest
                     next();
                 } else {
-                    var tracklist = spotify.searchResultsFromJSON(obj) 
-                    if (!tracklist) {
+                    var tracklistFromCache = spotify.searchResultsFromJSON(searchResultsFromCache)
+                    if (!tracklistFromCache || tracklistFromCache === null) {
+                        console.log('search results from searchResultsFromJSON were empty');
                         res.send('');
                         return;
                     }
-                    res.partial('search-results', { tracklist: tracklist})
+                    res.partial('search-results', { tracklist: tracklistFromCache})
                 };
             });
         },
@@ -43,10 +49,14 @@ exports.search = function(req, res) {
             // If we can't find the search results from redis, we will try to
             // get them from spotify
             spotify.api.searchTrack(searchQuery, function (err,searchResults) {
+                if (err) {
+                    console.log('error: ',err);
+                }
                 // save the results to redis before we return, so next identical
                 // search will be super fast.. or should I say "redis fast"
-                req.redisClient.set("search:cache:"+searchQuery,searchResults);
+                req.redisClient.hset("search_cache",searchQuery,searchResults);
                 tracks = spotify.searchResultsFromJSON(searchResults);
+                // tracks = spotify.filterTracksByTerritory(tracks);
                 res.partial('search-results', { tracklist: tracks})
             }).on('error', function(e) {
                 console.log('problem with spotify request: ' + e.message);
@@ -73,6 +83,7 @@ exports.queue_add = function(req, res) {
     spotify.api.lookupTrack(spotify_id, function (err,track) {
         if (!track) {
             res.send('');
+            console.log('error: ',err,' -- track: ', track);
             return;
         }
         req.redisClient.hset("spotify_track_meta",spotify_id,track);
@@ -88,13 +99,15 @@ exports.queue_add = function(req, res) {
 exports.queue = function(req, res) {
 
     req.redisClient.lrange("despot:queue", "0", "-1", function (err,arr) {
-        if (!arr) {
+        if (arr === null || err) {
             res.send('')
+            console.log('Queue empty: ',err);
             return;
         }
         req.redisClient.hmget("spotify_track_meta",arr,function(err,arr){
-            if (!arr) {
+            if (!arr || err) {
                 res.send('');
+                console.log(err);
                 return;
             }
             for (var i in arr) {

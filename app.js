@@ -4,7 +4,7 @@
  */
 
 var express = require('express'),
-	routes = require('./routes'),
+    routes = require('./routes'),
     despot = require('./lib/despot'),
     stylus = require('stylus');
 
