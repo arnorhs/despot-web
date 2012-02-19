@@ -67,7 +67,13 @@
             },
             success: function (data) {
                 $('#intro').hide();
-                var $tracklist = $('#tracklist').find('ul').html(data).end().show();
+                if (data.length < 1) {
+                    $('#tracklist').prepend('<h3 class="error">No songs found</h3>').find('ul').html('').show();
+                    return;
+                } else {
+                    $('#tracklist').find('.error').remove();
+                    var $tracklist = $('#tracklist').find('ul').html(data).end().show();
+                }
                 prepareTracks($tracklist);
                 doingSearch = false;
                 $q.removeClass('spinner');
