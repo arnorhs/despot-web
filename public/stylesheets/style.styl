@@ -1,6 +1,8 @@
 
 // reset stuff
 @import reset
+// selected mixinz
+@import mixins
 
 // the main css...
 html,body
@@ -31,7 +33,6 @@ a
   max-width: 1200px
 
 header.main
-  background: rgba(0,0,0,0.4)
   color: #FFFFFF
   height: 40px
   position: absolute
@@ -49,13 +50,22 @@ header.main
       text-align: center
       font-size: 24px
       background: rgba(0,0,0,0.2)
-      &:hover
+      border-bottom: 1px solid rgba(255,255,255,0.2)
+      border-radius(0px 0px 3px 3px)
+      transition-property: height
+      transition-duration: 0.1s
+      transition-timing-function: ease-in-out
+      &:hover, &:focus, &:active
         text-decoration: none
         background: rgba(0,0,0,0.5)
+        border-bottom: 1px solid rgba(255,255,255,0.2)
+        height: 45px
   .search-box
-    float: left
+    position: absolute
+    left: 130px
+    bottom: 0px
     width: 400px
-    margin-left: 40px
+    margin-left: 30px
     input.q
       border: 0
       width: 375px
