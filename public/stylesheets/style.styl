@@ -38,6 +38,9 @@ header.main
   position: absolute
   width: 100%
   z-index: 2
+  .standard-wrapper
+    position: relative
+    height: 40px
   h1
     float: left
     a
@@ -62,8 +65,8 @@ header.main
         height: 45px
   .search-box
     position: absolute
-    left: 130px
-    bottom: 0px
+    left: 90px
+    bottom: 1px
     width: 500px
     margin-left: 30px
     input.q
@@ -71,10 +74,10 @@ header.main
       width: 100%
       font-size: 15px
       padding: 4px 8px
-      margin-top: 6px
       background: rgba(255,255,255,0.2)
       border-radius: 2px
       color: #FFF
+      margin:0
       &:focus
         background: rgba(255,255,255, 1)
         color: #333
