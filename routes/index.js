@@ -20,7 +20,11 @@ exports.index = function(req, res){
 exports.search = function(req, res) {
 
     var searchQuery = req.query.q.trim();
-    console.log('Despot is going to find: ', searchQuery);
+    console.log('Searching for: ', searchQuery);
+    if (!!searchQuery.match(/^spotify:track:[a-zA-Z0-9]+$/)) {
+        res.send('');
+        return;
+    }
     step(
         function searchRedis () {
             var next = this;
