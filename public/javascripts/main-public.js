@@ -111,6 +111,7 @@ D.search = (function (D) {
 })(D);
 
 D.playback = (function (D) {
+    var $volumeButtons;
     function nextTrack () {
         D.ajaxPost('/playback/next',{
             success: function (data) {
@@ -118,14 +119,27 @@ D.playback = (function (D) {
             }
         });
     }
+    function volume (volume) {
+        D.ajaxPost('/playback/volume',{
+            data: { volume: volume }
+        });
+    }
     return {
         init: function () {
+            $volumeButtons = $('button.volume');
             $('#playback-next').click(function(e) {
                 e.preventDefault();
                 nextTrack();
             });
+            $volumeButtons.click(function(e) {
+                if ($(this).hasClass('active')) return false;
+                $volumeButtons.removeClass('active');
+                $(this).addClass('active');
+                volume($(this).data('volume'));
+            });
         },
-        nextTrack: nextTrack
+        nextTrack: nextTrack,
+        volume: volume
     };
 })(D);
 

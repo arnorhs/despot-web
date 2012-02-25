@@ -74,7 +74,8 @@ exports.playback_next = function(req, res) {
 
 exports.playback_volume = function(req, res) {
 
-    req.redisClient.rpush("despot:commands", "VOLUME "+req.params.volume);
+    req.redisClient.rpush("despot:commands", "VOLUME "+req.body.volume);
+    console.log('Volume set to '+req.body.volume);
     res.send('ok');
 
 };

@@ -25,19 +25,6 @@
       left: 30px
       color: #555
       top: 0px
-    #playback-next
-      cursor: pointer
-      background: transparent url(/images/playback-next.png) no-repeat 0px 0px
-      text-indent: -10000px
-      overflow: hidden
-      width: 26px
-      height: 26px
-      right: 20px
-      top: 7px
-      display: block
-      position: absolute
-      &:hover
-        opacity: 0.8
     ul
       overflow-y: auto
       max-height: 500px
@@ -53,5 +40,47 @@
         color: #ccc
         display: inline-block
         margin-right: 5px
-
-
+  #playback-next
+    cursor: pointer
+    background: transparent url(/images/playback-next.png) no-repeat 0px 0px
+    text-indent: -10000px
+    overflow: hidden
+    width: 26px
+    height: 26px
+    right: 20px
+    top: 10px
+    display: block
+    position: absolute
+    &:hover
+      opacity: 0.8
+  #volume_buttons
+    position: absolute
+    top: 10px
+    right: 56px
+    width: auto
+    button.volume
+      cursor: pointer
+      display: block
+      float: left
+      width: auto
+      height: 26px
+      border: none
+      background: #444
+      margin: 0
+      color: #000
+      color: #888
+      text-shadow: 0px -1px 0px #333
+      padding: 0 7px
+      border-left: 1px solid #444
+      gradient(top, #555, #333)
+      &:first-child
+        border-left: none
+        border-radius(3px 0 0 3px)
+      &:last-child
+        border-radius(0 3px 3px 0)
+      &.active, &.active:hover
+        gradient(top, #333, #444)
+        color: #000
+        text-shadow: 0px 1px 0px #555
+      &:hover
+        gradient(top, #666, #333)
