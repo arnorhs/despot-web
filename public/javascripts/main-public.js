@@ -1,92 +1,74 @@
-(function(window, undefined) {
-    var $q, doingSearch = false, timer,
-        idleDelay = 1500, lastSearch = '',
-        minimumSearchLength = 2,
-        ignoreKeys = [32, 8, 13, 39, 37, 38, 40, 16, 18, 17, 224, 9, 46];
+// surely we don't want to pollute the gobal namespace
+// all the components are defined on this object
+D = {};
 
-    function nextTrack() {
-        $ajaxPost('/playback/next',{
-            success: function (data) {
-                $('#song-queue ul li:first').remove();
+// handles state of the main content area
+D.mainContentState = (function (D) {
+    return SimpleState({
+        intro: {
+            on: function () {
+                $('#intro').show();
+            },
+            off: function () {
+                $('#intro').hide();
             }
-        });
-    }
+        },
+        searchResults: {
+            on: function () {
+                $('#tracklist').show();
+            },
+            off: function () {
+                $('#tracklist').hide().find('ul').html('');
+            }
+        },
+        error: {
+            on: function (errorString) {
+                errorString = errorString || "Fuck, something went wrong and we forgot to pass along an error message";
+                $('#tracklist').prepend('<h3 class="error">'+errorString+'</h3>').show();
+            },
+            off: function () {
+                $('#tracklist').hide().find('h3.error').remove();
+            }
+        }
+    },'intro');
+})(D);
+
+D.search = (function (D) {
+    var lastKeyword = '',
+        $q,
+        minimumSearchLength = 2;
 
     function getActiveSearchTerm () {
         return $q.val().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     }
 
-    // loads the list of stuff in the queue
-    function fetchRemoteQueue () {
-        $ajaxGet('/queue', {
-            success: function (data) {
-                displayQueue(data);
-            },
-            error: function () {
-                alert("Fuck, something's wrong.");
-            }
-        });
-    }
-
-    function addToQueue(spotify_id) {
-        $ajaxPost('/queue/add', {
-            data: {
-                spotify_id: spotify_id
-            },
-            success: function (data) {
-                displayQueue(data);
-            },
-            error: function () {
-                alert("Oops! We're having problems adding to queue. Try again later");
-            }
-        });
-    }
-
-    function displayQueue(data) {
-        $('#song-queue ul').append(data);
-    }
-
-    function prepareTracks ($obj) {
-        $('span.add-to-queue',$obj).click(function(){
-            var spotify_id = $(this).closest('li.track').find('.song a').attr('href');
-            addToQueue(spotify_id);
-        });
-    }
-
-    function doSearch (search) {
-
-        // prevent us from doing two ajax requests at the same time
-        if (doingSearch || search.length < 1) return false;
-        if (search == lastSearch) return false;
-        lastSearch = search;
-        doingSearch = true;
+    function doSearch (keyword) {
+        // prevent us from doing two ajax requests for the same keyword
+        if (keyword == lastKeyword) return false;
+        lastKeyword = keyword;
         $q.addClass('spinner');
-        $ajaxGet('/search', {
+        D.ajaxGet('/search', {
             data: {
-                q: search
+                q: keyword
             },
             success: function (data) {
-                $('#intro').hide();
+                $q.removeClass('spinner');
                 if (data.length < 1) {
-                    $('#tracklist').prepend('<h3 class="error">No songs found</h3>').find('ul').html('').show();
+                    D.mainContentState.setState('error','No songs found');
                     return;
                 } else {
-                    $('#tracklist').find('.error').remove();
-                    var $tracklist = $('#tracklist').find('ul').html(data).end().show();
+                    D.mainContentState.setState('searchResults');
+                    var $tracklist = $('#tracklist').find('ul').html(data);
+                    D.prepare('tracks', $tracklist);
                 }
-                prepareTracks($tracklist);
-                doingSearch = false;
-                $q.removeClass('spinner');
-                document.location.hash = encodeURIComponent(search);
+                document.location.hash = encodeURIComponent(keyword);
             },
             error: function () {
-                var $tracklist = $('#tracklist').find('ul').html("<li>Oops.. search didn't go very well.. try again later. Sorry.").end().show();
-                doingSearch = false;
+                D.mainContentState.setState('error', "Oops.. search didn't go very well.. try again later. Sorry.");
             }
         });
     }
-
-    $(function(){
+    function init () {
         $q = $('input.q');
         $q.focus().select();
         if (document.location.hash.length > 0) {
@@ -96,46 +78,120 @@
             doSearch(getActiveSearchTerm());
         }
 
-        var doingSearch = false;
         $q.keyup(function(e){
-
-            clearTimeout(timer);
-
             // only search if we have enough stuff and they key pressed was a key..
             if ([13,32].indexOf(e.keyCode) != -1) {
                 doSearch(getActiveSearchTerm());
             } else if (getActiveSearchTerm().length < minimumSearchLength) {
                 if (getActiveSearchTerm().length < minimumSearchLength) {
-                    $('#tracklist').hide();
-                    $('#intro').show();
+                    D.mainContentState.setState('intro');
                     document.location.hash = '';
                 }
-            } else {
-                // almost instant search.. waits a few ms
-                (function(searchTerm){
-                    timer = setTimeout(function(){
-                        doSearch(searchTerm);
-                    },idleDelay);
-                })(getActiveSearchTerm());
             }
         });
+    }
+    return {
+        init: init,
+        doSearch: doSearch
+    };
+})(D);
 
-        // load the queue
-        fetchRemoteQueue();
-
-        $('#playback-next').click(function(e) {
-            e.preventDefault();
-            nextTrack();
-        });
-    });
-
-
+// utilities and short hand functions
+(function (D) {
     // Lazy short-hand functions for ajax requests - returns whatever $.ajax returns
     function _ajax (type) {
         return function (url,options) {
             return $.ajax( $.extend({}, {type: type, url: url, dataType:'html'}, options) );
         };
     }
-    var $ajaxGet = _ajax('GET'), $ajaxPost = _ajax('POST');
+    $.extend(D,{
+        'ajaxGet': _ajax('GET'),
+        'ajaxPost': _ajax('POST')
+    });
+})(D);
 
-})(window);
+D.playback = (function (D) {
+    function nextTrack () {
+        D.ajaxPost('/playback/next',{
+            success: function (data) {
+                D.queue.removeFirst();
+            }
+        });
+    }
+    return {
+        init: function () {
+            $('#playback-next').click(function(e) {
+                e.preventDefault();
+                nextTrack();
+            });
+        },
+        nextTrack: nextTrack
+    };
+})(D);
+
+D.prepare = (function(D) {
+    var types = {
+        'tracks': function ($obj) {
+            $('span.add-to-queue',$obj).click(function(){
+                var spotify_id = $(this).closest('li.track').find('.song a').attr('href');
+                D.queue.add(spotify_id);
+            });
+        }
+    };
+    return function (what,$obj) {
+        if (!types[what]) return false;
+        return types[what]($obj);
+    };
+})(D);
+
+D.queue = (function(D) {
+
+    // loads the list of stuff in the queue
+    function fetchRemote () {
+        D.ajaxGet('/queue', {
+            success: function (data) {
+                display(data);
+            },
+            error: function () {
+                alert("Fuck, something went wrong when trying to fetch the queue.");
+            }
+        });
+    }
+
+    function add (spotify_id) {
+        D.ajaxPost('/queue/add', {
+            data: {
+                spotify_id: spotify_id
+            },
+            success: function (data) {
+                display(data);
+            },
+            error: function () {
+                alert("Oops! We're having problems adding to queue. Try again later");
+            }
+        });
+    }
+
+    function display(data) {
+        $('#song-queue ul').append(data);
+    }
+
+    return {
+        display: display,
+        add: add,
+        fetchRemote: fetchRemote,
+        removeFirst: function () {
+            $('#song-queue ul li:first').remove();
+        }
+    };
+
+})(D);
+
+$(function(){
+    // init searchbox etc
+    D.search.init();
+    // load the queue
+    D.queue.fetchRemote();
+    // bind events to skip song etc
+    D.playback.init();
+});
