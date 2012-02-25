@@ -39,6 +39,7 @@ app.get('/search', routes.search);
 app.get('/queue', routes.queue);
 app.post('/queue/add', routes.queue_add);
 app.post('/playback/next', routes.playback_next);
+app.post('/playback/volume/:volume', routes.playback_volume);
 
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

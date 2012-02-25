@@ -72,6 +72,13 @@ exports.playback_next = function(req, res) {
 
 };
 
+exports.playback_volume = function(req, res) {
+
+    req.redisClient.rpush("despot:commands", "VOLUME "+req.params.volume);
+    res.send('ok');
+
+};
+
 exports.queue_add = function(req, res) {
 
     var spotify_id = req.body.spotify_id;
