@@ -19,11 +19,13 @@ html
             .queue-chrome
                 .queue-inner
                     h4.now-playing Now playing...
-                    span#playback-next(title="Skip this song") next
-                    #volume_buttons
-                      button.volume(data-volume=20, title="Volume to 20") 20
-                      button.volume.active(data-volume=70, title="Volume to 70") 70
-                      button.volume(data-volume=100, title="Volume to 100") 100
+                    #playback_controls
+                      .group
+                        button.volume(data-volume=20, title="Volume to 20") 2
+                        button.volume.active(data-volume=70, title="Volume to 70") 7
+                        button.volume(data-volume=100, title="Volume to 100") 10
+                      .group
+                        button.playback-next(title="Skip this song") &raquo;
                     #song-queue
                         ul
         .main-wrapper
