@@ -1,16 +1,14 @@
 function Socket(options) {
-  this._options = options;
-  this.bind();
+  this.bind(options);
 }
 
-Socket.prototype.bind = function() {
-  var socket = io.connect('http://localhost'),
-      self   = this;
+Socket.prototype.bind = function(options) {
+  var socket = io.connect('http://localhost');
 
   socket.on('added', function (data) {
     D.lookup(data.uri, {
       success: function (data) {
-        self._options.added && self._options.added(data.track);
+        options.added && options.added(data.track);
       }
     });
   });
@@ -18,12 +16,12 @@ Socket.prototype.bind = function() {
   socket.on('playing', function (data) {
     D.lookup(data.uri, {
       success: function (data) {
-        self._options.playing && self._options.playing(data.track);
+        options.playing && options.playing(data.track);
       }
     });
   });
 
   socket.on('volume', function (data) {
-    self._options.playing && self._options.volume(data.level);
+    options.playing && options.volume(data.level);
   });
-}
+};
