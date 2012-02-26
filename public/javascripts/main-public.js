@@ -125,11 +125,7 @@ D.search = (function (D) {
 D.playback = (function (D) {
     var $volumeButtons;
     function nextTrack () {
-        D.ajaxPost('/playback/next',{
-            success: function (data) {
-                D.queue.removeFirst();
-            }
-        });
+        D.ajaxPost('/playback/next');
     }
     function volume (volume) {
         D.ajaxPost('/playback/volume',{
@@ -189,9 +185,6 @@ D.queue = (function(D) {
             data: {
                 spotify_id: spotify_id
             },
-            success: function (data) {
-                display(data);
-            },
             error: function () {
                 alert("Oops! We're having problems adding to queue. Try again later");
             }
@@ -223,9 +216,12 @@ $(function(){
 
     D.socket = new Socket({
       playing: function(track) {
-        console.log('new track:', track);
         $('#current-track').text(track.artists[0].name + " - " + track.name);
-        $('#playlist li:first').remove();
+        D.queue.removeFirst();
+      },
+      added: function(track) {
+        $('#song-queue ul').append('<li><a href="' + track.uri + '">' + track.name + '</a> | by '
+                                   + track.artists[0].name + '</li>');
       },
       volume: function(level) {
         $('button.volume').removeClass('active');
