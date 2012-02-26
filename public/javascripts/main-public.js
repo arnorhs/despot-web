@@ -2,6 +2,18 @@
 // all the components are defined on this object
 D = {};
 
+D.lookup = function(uri, options) {
+  $.ajax({
+    url: 'http://ws.spotify.com/lookup/1/.json?uri=' + uri,
+    success: function(data) {
+      options.success && options.success(data);
+    },
+    error: function(data) {
+      options.error && options.error(data);
+    }
+  });
+}
+
 // handles state of the main content area
 D.mainContentState = (function (D) {
     return SimpleState({
@@ -208,4 +220,16 @@ $(function(){
     D.queue.fetchRemote();
     // bind events to skip song etc
     D.playback.init();
+
+    D.socket = new Socket({
+      playing: function(track) {
+        console.log('new track:', track);
+        $('#current-track').text(track.artists[0].name + " - " + track.name);
+        $('#playlist li:first').remove();
+      },
+      volume: function(level) {
+        $('button.volume').removeClass('active');
+        $('button.volume[data-volume=' + level + ']').addClass('active');
+      }
+    });
 });
