@@ -3,7 +3,7 @@ function Socket(options) {
 }
 
 Socket.prototype.bind = function(options) {
-  var socket = io.connect('http://localhost');
+  var socket = io.connect('/');
 
   socket.on('added', function (data) {
     D.lookup(data.uri, {
