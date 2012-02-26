@@ -189,9 +189,6 @@ D.queue = (function(D) {
             data: {
                 spotify_id: spotify_id
             },
-            success: function (data) {
-                display(data);
-            },
             error: function () {
                 alert("Oops! We're having problems adding to queue. Try again later");
             }
@@ -222,8 +219,11 @@ $(function(){
     D.playback.init();
 
     D.socket = new Socket({
+      added: function(track) {
+        $('#song-queue ul').append('<li><a href="' + track.uri + '">' + track.name + '</a> | by '
+                                   + track.artists[0].name + '</li>');
+      },
       playing: function(track) {
-        console.log('new track:', track);
         $('#current-track').text(track.artists[0].name + " - " + track.name);
         $('#playlist li:first').remove();
       },

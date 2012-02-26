@@ -89,6 +89,8 @@ exports.queue_add = function(req, res) {
     var spotify_id = req.body.spotify_id;
     // add it to the queue
     req.redisClient.rpush("despot:queue", spotify_id);
+    req.redisClient.publish("despot:events", "ADDED " + spotify_id);
+    res.send(200);
     // retrieve meta data
     // If we can't find the search results from redis, we will try to
     // get them from spotify
@@ -99,7 +101,6 @@ exports.queue_add = function(req, res) {
             return;
         }
         req.redisClient.hset("spotify_track_meta",spotify_id,track);
-        res.partial('queue-list', {queue:[spotify.trackMetaFromJSON(track)]});
     }).on('error', function(e) {
         console.log('problem with spotify request: ' + e.message);
         res.partial('ajax-error', {queue:[req.body.spotify_id]});
