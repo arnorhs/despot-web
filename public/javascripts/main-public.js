@@ -125,11 +125,7 @@ D.search = (function (D) {
 D.playback = (function (D) {
     var $volumeButtons;
     function nextTrack () {
-        D.ajaxPost('/playback/next',{
-            success: function (data) {
-                D.queue.removeFirst();
-            }
-        });
+        D.ajaxPost('/playback/next');
     }
     function volume (volume) {
         D.ajaxPost('/playback/volume',{
@@ -225,7 +221,7 @@ $(function(){
       },
       playing: function(track) {
         $('#current-track').text(track.artists[0].name + " - " + track.name);
-        $('#playlist li:first').remove();
+        D.queue.removeFirst();
       },
       volume: function(level) {
         $('button.volume').removeClass('active');
