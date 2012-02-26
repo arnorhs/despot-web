@@ -6,9 +6,12 @@
 var express = require('express'),
     routes = require('./routes'),
     despot = require('./lib/despot'),
-    stylus = require('stylus');
+    stylus = require('stylus'),
+    redis = require('redis'),
+    coordinator = require('./lib/coordinator');
 
 var app = module.exports = express.createServer()
+   , io = require('socket.io').listen(app);
 
 // Configuration
 app.configure(function(){
@@ -43,3 +46,5 @@ app.post('/playback/volume', routes.playback_volume);
 
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+
+var coordinator = new coordinator.Coordinator(redis.createClient(), io.sockets);
